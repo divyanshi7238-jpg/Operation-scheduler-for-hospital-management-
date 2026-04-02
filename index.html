@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OT Scheduler — Hospital Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #112240;
+    --navy-card: #162943;
+    --navy-border: #1e3a5f;
+    --navy-hover: #1a3352;
+    --steel: #2d6a9f;
+    --steel-light: #3d8ecf;
+    --steel-pale: #d0e8f8;
+    --ice: #e8f4fd;
+    --red: #e05252;
+    --red-soft: #2a1818;
+    --amber: #f0a500;
+    --amber-soft: #2a2010;
+    --green: #27c47a;
+    --green-soft: #102a1c;
+    --teal: #0fd9c0;
+    --teal-soft: #0a2421;
+    --text-primary: #e8edf5;
+    --text-secondary: #8fa3bc;
+    --text-muted: #4d6480;
+    --font-main: 'DM Sans', sans-serif;
+    --font-display: 'Playfair Display', serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --transition: 0.18s ease;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font-main);
+    background: var(--navy);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Auth Screen ── */
+  #auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--navy);
+    position: relative;
+  }
+  .auth-bg-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(45,106,159,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45,106,159,0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .auth-container {
+    position: relative; z-index: 1;
+    display: flex; gap: 0;
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    width: min(900px, 95vw);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  }
+  .auth-brand {
+    background: var(--steel);
+    background-image: repeating-linear-gradient(
+      45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
+      transparent 1px, transparent 12px
+    );
+    width: 300px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2.5rem;
+    text-align: center;
+  }
+  .brand-cross {
+    width: 56px; height: 56px; margin-bottom: 1.5rem; position: relative;
+  }
+  .brand-cross::before, .brand-cross::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 3px;
+  }
+  .brand-cross::before { width: 12px; height: 56px; left: 22px; top: 0; }
+  .brand-cross::after  { width: 56px; height: 12px; left: 0; top: 22px; }
+  .auth-brand h1 {
+    font-family: var(--font-display);
+    font-size: 1.5rem; font-weight: 600;
+    color: white; line-height: 1.3; margin-bottom: .5rem;
+  }
+  .auth-brand p {
+    font-size: .8rem; color: rgba(255,255,255,0.7);
+    line-height: 1.6; letter-spacing: .02em;
+  }
+  .auth-tabs-row {
+    display: flex; border-bottom: 1px solid var(--navy-border); margin-bottom: 1.5rem;
+  }
+  .auth-tab {
+    flex: 1; padding: .75rem; text-align: center;
+    font-size: .85rem; font-weight: 500; cursor: pointer;
+    color: var(--text-muted); border-bottom: 2px solid transparent;
+    transition: all var(--transition);
+  }
+  .auth-tab.active { color: var(--steel-light); border-bottom-color: var(--steel-light); }
+  .auth-form-area { flex: 1; padding: 2.5rem; }
+  .auth-form-area h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem; margin-bottom: .3rem;
+  }
+  .auth-form-area p.sub { font-size: .85rem; color: var(--text-secondary); margin-bottom: 2rem; }
+  .role-select-row {
+    display: flex; gap: .5rem; margin-bottom: 1.5rem;
+  }
+  .role-btn {
+    flex: 1; padding: .6rem; border-radius: var(--radius);
+    border: 1px solid var(--navy-border);
+    background: var(--navy); color: var(--text-secondary);
+    font-family: var(--font-main); font-size: .82rem; cursor: pointer;
+    transition: all var(--transition);
+  }
+  .role-btn.active {
+    background: var(--navy-card); border-color: var(--steel);
+    color: var(--steel-light);
+  }
+  .form-field { margin-bottom: 1rem; }
+  .form-field label {
+    display: block; font-size: .78rem; font-weight: 500;
+    color: var(--text-secondary); letter-spacing: .06em;
+    text-transform: uppercase; margin-bottom: .4rem;
+  }
+  .form-field input, .form-field select {
+    width: 100%; padding: .65rem .9rem;
+    background: var(--navy); border: 1px solid var(--navy-border);
+    border-radius: var(--radius); color: var(--text-primary);
+    font-family: var(--font-main); font-size: .9rem;
+    transition: border-color var(--transition);
+    outline: none;
+  }
+  .form-field input:focus, .form-field select:focus {
+    border-color: var(--steel);
+  }
+  .form-field input::placeholder { color: var(--text-muted); }
+  .btn-primary {
+    width: 100%; padding: .75rem;
+    background: var(--steel); border: none;
+    border-radius: var(--radius); color: white;
+    font-family: var(--font-main); font-size: .92rem; font-weight: 500;
+    cursor: pointer; transition: background var(--transition);
+    letter-spacing: .02em;
+  }
+  .btn-primary:hover { background: var(--steel-light); }
+  .demo-hint {
+    font-size: .75rem; color: var(--text-muted); text-align: center;
+    margin-top: 1rem; font-family: var(--font-mono);
+  }
+
+  /* ── App Shell ── */
+  #app { display: none; min-height: 100vh; }
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--navy-mid);
+    border-bottom: 1px solid var(--navy-border);
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0 1.5rem; height: 56px;
+  }
+  .topbar-cross {
+    width: 28px; height: 28px; position: relative; flex-shrink: 0;
+  }
+  .topbar-cross::before, .topbar-cross::after {
+    content: ''; position: absolute;
+    background: var(--steel-light); border-radius: 2px;
+  }
+  .topbar-cross::before { width: 6px; height: 28px; left: 11px; top: 0; }
+  .topbar-cross::after  { width: 28px; height: 6px; left: 0; top: 11px; }
+  .topbar-title {
+    font-family: var(--font-display); font-size: 1.05rem;
+    font-weight: 500; flex: 1;
+  }
+  .topbar-user {
+    display: flex; align-items: center; gap: .6rem;
+    font-size: .82rem; color: var(--text-secondary);
+  }
+  .user-badge {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--steel); display: flex; align-items: center;
+    justify-content: center; font-size: .72rem; font-weight: 600;
+    color: white; letter-spacing: .04em;
+  }
+  .logout-btn {
+    padding: .3rem .7rem; border-radius: var(--radius);
+    border: 1px solid var(--navy-border);
+    background: transparent; color: var(--text-muted);
+    font-family: var(--font-main); font-size: .78rem; cursor: pointer;
+    transition: all var(--transition);
+  }
+  .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .layout { display: flex; min-height: calc(100vh - 56px); }
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    padding: 1rem 0;
+    position: sticky; top: 56px; height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    padding: .25rem 1rem .5rem;
+    font-size: .68rem; font-weight: 600;
+    color: var(--text-muted); letter-spacing: .1em;
+    text-transform: uppercase; margin-top: .5rem;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .55rem 1rem .55rem 1.2rem;
+    font-size: .85rem; color: var(--text-secondary);
+    cursor: pointer; transition: all var(--transition);
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover { color: var(--text-primary); background: var(--navy-hover); }
+  .nav-item.active {
+    color: var(--steel-light);
+    background: rgba(45,106,159,0.1);
+    border-left-color: var(--steel-light);
+  }
+  .nav-icon {
+    width: 16px; height: 16px; flex-shrink: 0;
+    opacity: .7;
+  }
+  .nav-item.active .nav-icon { opacity: 1; }
+
+  .main-content { flex: 1; padding: 1.5rem 2rem; overflow: hidden; }
+
+  /* ── Page Sections ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header {
+    display: flex; align-items: flex-end;
+    justify-content: space-between; margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--navy-border); padding-bottom: 1rem;
+  }
+  .page-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.6rem; font-weight: 500;
+  }
+  .page-header p { font-size: .82rem; color: var(--text-secondary); margin-top: .2rem; }
+
+  /* ── Cards & Grids ── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin-bottom: 1.5rem;
+  }
+  .stat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.2rem;
+  }
+  .stat-label {
+    font-size: .72rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-muted); margin-bottom: .4rem;
+  }
+  .stat-value {
+    font-size: 1.8rem; font-weight: 600;
+    font-family: var(--font-mono); line-height: 1;
+  }
+  .stat-sub { font-size: .75rem; color: var(--text-secondary); margin-top: .3rem; }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.amber .stat-value { color: var(--amber); }
+  .stat-card.red   .stat-value { color: var(--red); }
+  .stat-card.teal  .stat-value { color: var(--teal); }
+
+  /* ── Table ── */
+  .table-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg); overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .table-toolbar {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .9rem 1.2rem;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .table-toolbar h3 { font-size: .95rem; font-weight: 500; flex: 1; }
+  .toolbar-input {
+    padding: .4rem .8rem; border-radius: var(--radius);
+    border: 1px solid var(--navy-border);
+    background: var(--navy); color: var(--text-primary);
+    font-family: var(--font-main); font-size: .82rem; outline: none;
+    width: 180px; transition: border-color var(--transition);
+  }
+  .toolbar-input:focus { border-color: var(--steel); }
+  .btn-sm {
+    padding: .4rem .85rem; border-radius: var(--radius);
+    border: 1px solid var(--navy-border);
+    background: var(--navy); color: var(--text-secondary);
+    font-family: var(--font-main); font-size: .8rem; cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn-sm:hover { border-color: var(--steel); color: var(--steel-light); }
+  .btn-sm.primary {
+    background: var(--steel); border-color: var(--steel); color: white;
+  }
+  .btn-sm.primary:hover { background: var(--steel-light); }
+  .btn-sm.danger { border-color: var(--red); color: var(--red); }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    padding: .6rem 1rem;
+    font-size: .72rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid var(--navy-border);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(30,58,95,0.5);
+    transition: background var(--transition);
+  }
+  tbody tr:hover { background: var(--navy-hover); }
+  tbody td {
+    padding: .65rem 1rem;
+    font-size: .84rem; color: var(--text-primary);
+    vertical-align: middle;
+  }
+  .cell-mono { font-family: var(--font-mono); font-size: .8rem; }
+  .cell-muted { color: var(--text-secondary); }
+
+  /* ── Status Pills ── */
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: .18rem .65rem; border-radius: 99px;
+    font-size: .73rem; font-weight: 500; white-space: nowrap;
+  }
+  .pill::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    display: inline-block;
+  }
+  .pill-green  { background: var(--green-soft);  color: var(--green);  }
+  .pill-green::before  { background: var(--green); }
+  .pill-amber  { background: var(--amber-soft);  color: var(--amber);  }
+  .pill-amber::before  { background: var(--amber); }
+  .pill-red    { background: var(--red-soft);    color: var(--red);    }
+  .pill-red::before    { background: var(--red); }
+  .pill-teal   { background: var(--teal-soft);   color: var(--teal);   }
+  .pill-teal::before   { background: var(--teal); }
+  .pill-muted  { background: rgba(255,255,255,0.04); color: var(--text-muted); }
+  .pill-muted::before  { background: var(--text-muted); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg);
+    width: min(700px, 95vw);
+    max-height: 90vh; overflow-y: auto;
+    padding: 1.8rem;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  }
+  .modal-header {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; margin-bottom: 1.5rem;
+  }
+  .modal-header h3 {
+    font-family: var(--font-display); font-size: 1.3rem;
+  }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: var(--radius);
+    border: 1px solid var(--navy-border);
+    background: transparent; color: var(--text-muted);
+    font-size: 1rem; cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--transition);
+  }
+  .modal-close:hover { border-color: var(--red); color: var(--red); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .form-field textarea {
+    width: 100%; padding: .65rem .9rem;
+    background: var(--navy); border: 1px solid var(--navy-border);
+    border-radius: var(--radius); color: var(--text-primary);
+    font-family: var(--font-main); font-size: .88rem;
+    resize: vertical; min-height: 80px; outline: none;
+    transition: border-color var(--transition);
+  }
+  .form-field textarea:focus { border-color: var(--steel); }
+  .modal-footer {
+    display: flex; justify-content: flex-end; gap: .75rem;
+    margin-top: 1.5rem; padding-top: 1rem;
+    border-top: 1px solid var(--navy-border);
+  }
+  .btn-lg {
+    padding: .65rem 1.4rem; border-radius: var(--radius);
+    font-family: var(--font-main); font-size: .88rem;
+    font-weight: 500; cursor: pointer; transition: all var(--transition);
+  }
+  .btn-ghost {
+    border: 1px solid var(--navy-border);
+    background: transparent; color: var(--text-secondary);
+  }
+  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text-primary); }
+  .btn-accent {
+    border: 1px solid var(--steel);
+    background: var(--steel); color: white;
+  }
+  .btn-accent:hover { background: var(--steel-light); }
+
+  /* ── Schedule Calendar ── */
+  .calendar-nav {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+  }
+  .cal-month {
+    font-family: var(--font-display); font-size: 1.1rem; flex: 1;
+  }
+  .cal-grid-head {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    gap: 3px; margin-bottom: 3px;
+  }
+  .cal-day-label {
+    text-align: center; font-size: .68rem;
+    font-weight: 600; letter-spacing: .08em;
+    color: var(--text-muted); padding: .4rem 0;
+    text-transform: uppercase;
+  }
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7,1fr); gap: 3px;
+  }
+  .cal-cell {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    min-height: 80px; padding: .4rem;
+    cursor: pointer; transition: border-color var(--transition);
+    position: relative;
+  }
+  .cal-cell:hover { border-color: var(--steel); }
+  .cal-cell.today { border-color: var(--steel-light); }
+  .cal-cell.outside { opacity: .35; }
+  .cal-date {
+    font-size: .72rem; font-family: var(--font-mono);
+    color: var(--text-secondary); display: block; margin-bottom: .3rem;
+  }
+  .cal-cell.today .cal-date { color: var(--steel-light); font-weight: 600; }
+  .cal-event {
+    font-size: .68rem; background: rgba(45,106,159,0.35);
+    border-left: 2px solid var(--steel-light);
+    border-radius: 0 3px 3px 0;
+    padding: .15rem .35rem; margin-bottom: .2rem;
+    color: var(--steel-pale); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+  }
+  .cal-event.urgent { background: rgba(224,82,82,0.2); border-left-color: var(--red); color: #f0a0a0; }
+
+  /* ── OT Timeline ── */
+  .ot-row {
+    display: flex; gap: 0; margin-bottom: .5rem; align-items: stretch;
+  }
+  .ot-label {
+    width: 90px; flex-shrink: 0;
+    font-size: .75rem; font-family: var(--font-mono);
+    color: var(--text-secondary); padding: .5rem .8rem .5rem 0;
+    display: flex; align-items: center;
+  }
+  .ot-track {
+    flex: 1; background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius); height: 52px;
+    position: relative; overflow: hidden;
+  }
+  .ot-slot {
+    position: absolute; top: 4px; bottom: 4px;
+    background: rgba(45,106,159,0.35);
+    border-left: 3px solid var(--steel-light);
+    border-radius: 0 4px 4px 0;
+    padding: 0 .5rem;
+    display: flex; align-items: center; gap: .4rem;
+    cursor: pointer; transition: background var(--transition);
+    min-width: 80px; overflow: hidden;
+  }
+  .ot-slot:hover { background: rgba(45,106,159,0.55); }
+  .ot-slot.emergency {
+    background: rgba(224,82,82,0.2); border-left-color: var(--red);
+  }
+  .ot-slot-label {
+    font-size: .72rem; color: var(--text-primary); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .time-ruler {
+    display: flex; margin-left: 90px; margin-bottom: .3rem;
+  }
+  .time-tick {
+    flex: 1; font-size: .65rem; font-family: var(--font-mono);
+    color: var(--text-muted); text-align: left;
+    padding-left: .3rem;
+  }
+
+  /* ── Detail Panel ── */
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: .75rem; margin-bottom: 1rem;
+  }
+  .detail-item label {
+    display: block; font-size: .7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-muted); margin-bottom: .2rem;
+  }
+  .detail-item span {
+    font-size: .88rem; color: var(--text-primary);
+  }
+  .section-divider {
+    border-top: 1px solid var(--navy-border);
+    padding-top: 1rem; margin-top: .5rem;
+    font-size: .72rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-muted); margin-bottom: .75rem;
+  }
+
+  /* ── Efficiency Chart ── */
+  .bar-chart { padding: 1rem; }
+  .bar-row {
+    display: flex; align-items: center; gap .75rem;
+    margin-bottom: .75rem;
+  }
+  .bar-label {
+    width: 50px; font-size: .73rem; font-family: var(--font-mono);
+    color: var(--text-secondary); flex-shrink: 0; text-align: right;
+  }
+  .bar-track {
+    flex: 1; background: rgba(255,255,255,0.05);
+    border-radius: 99px; height: 10px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 99px;
+    background: var(--steel); transition: width .6s ease;
+  }
+  .bar-pct {
+    width: 38px; font-size: .72rem; font-family: var(--font-mono);
+    color: var(--text-secondary); text-align: right;
+  }
+
+  /* ── Notification Toast ── */
+  #toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999;
+    background: var(--navy-card); border: 1px solid var(--navy-border);
+    border-radius: var(--radius); padding: .8rem 1.2rem;
+    font-size: .85rem; display: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    max-width: 320px; min-width: 220px;
+    animation: slideUp .25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  #toast.success { border-left: 3px solid var(--green); }
+  #toast.error   { border-left: 3px solid var(--red);   }
+  #toast.warn    { border-left: 3px solid var(--amber);  }
+
+  /* ── Profile Card ── */
+  .profile-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+    display: flex; gap: 1.5rem; align-items: flex-start;
+    margin-bottom: 1.5rem;
+  }
+  .profile-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--steel); display: flex; align-items: center;
+    justify-content: center; font-size: 1.4rem; font-weight: 600;
+    color: white; flex-shrink: 0;
+  }
+  .profile-info h3 {
+    font-family: var(--font-display); font-size: 1.2rem; margin-bottom: .25rem;
+  }
+  .profile-info p { font-size: .82rem; color: var(--text-secondary); margin-bottom: .4rem; }
+
+  /* ── Emergency Banner ── */
+  .emerg-banner {
+    background: rgba(224,82,82,0.12);
+    border: 1px solid rgba(224,82,82,0.3);
+    border-radius: var(--radius);
+    padding: .7rem 1rem; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .75rem;
+    font-size: .84rem;
+  }
+  .emerg-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red); flex-shrink: 0;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: .5; transform: scale(.8); }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .main-content { padding: 1rem; }
+    .auth-brand { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     AUTH SCREEN
+══════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-bg-grid"></div>
+  <div class="auth-container">
+    <div class="auth-brand">
+      <div class="brand-cross"></div>
+      <h1>OT Scheduler</h1>
+      <p>Hospital Operating Theater<br>Management System</p>
+    </div>
+    <div class="auth-form-area">
+      <div class="auth-tabs-row">
+        <div class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</div>
+        <div class="auth-tab" onclick="switchAuthTab('register',this)">Register</div>
+      </div>
+
+      <!-- Login -->
+      <div id="tab-login">
+        <h2>Welcome back</h2>
+        <p class="sub">Access the scheduling dashboard</p>
+        <div style="margin-bottom:1rem;">
+          <div class="form-field" style="margin-bottom:.5rem;">
+            <label>Role</label>
+            <div class="role-select-row">
+              <button class="role-btn active" onclick="selectRole('admin',this)">Administrator</button>
+              <button class="role-btn" onclick="selectRole('doctor',this)">Doctor</button>
+              <button class="role-btn" onclick="selectRole('staff',this)">Staff / Nurse</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Email / Staff ID</label>
+          <input type="text" id="login-email" placeholder="e.g. admin@hospital.org">
+        </div>
+        <div class="form-field">
+          <label>Password</label>
+          <input type="password" id="login-pass" placeholder="••••••••">
+        </div>
+        <button class="btn-primary" onclick="doLogin()">Sign In</button>
+        <p class="demo-hint">Demo: admin / doctor / staff — any password</p>
+      </div>
+
+      <!-- Register -->
+      <div id="tab-register" style="display:none;">
+        <h2>Create account</h2>
+        <p class="sub">Register as a new system user</p>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>First Name</label>
+            <input type="text" id="reg-fname" placeholder="Dr. Jane">
+          </div>
+          <div class="form-field">
+            <label>Last Name</label>
+            <input type="text" id="reg-lname" placeholder="Smith">
+          </div>
+          <div class="form-field">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="jane@hospital.org" class="span2">
+          </div>
+          <div class="form-field">
+            <label>Specialisation</label>
+            <input type="text" id="reg-spec" placeholder="Cardiothoracic Surgery">
+          </div>
+          <div class="form-field">
+            <label>Staff Role</label>
+            <select id="reg-role">
+              <option>Surgeon</option><option>Anaesthesiologist</option>
+              <option>Nurse</option><option>Assistant Surgeon</option>
+              <option>Theatre Technician</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Password</label>
+            <input type="password" id="reg-pass" placeholder="Min. 8 chars">
+          </div>
+          <div class="form-field">
+            <label>Confirm Password</label>
+            <input type="password" id="reg-cpass" placeholder="Repeat password">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="doRegister()">Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════ -->
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-cross"></div>
+    <span class="topbar-title">OT Scheduler — Central Hospital</span>
+    <div class="topbar-user">
+      <div class="user-badge" id="topbar-initials">AD</div>
+      <span id="topbar-name">Admin</span>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div id="nav-admin">
+        <div class="sidebar-section">Admin</div>
+        <div class="nav-item active" onclick="showPage('dashboard',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M0 2a2 2 0 0 1 2-2h3v7H0V2zm0 8h5v6H2a2 2 0 0 1-2-2v-4zm6 6V9h10v5a2 2 0 0 1-2 2H6zm0-15h10a2 2 0 0 1 2 2v4H6V1z"/></svg>
+          Dashboard
+        </div>
+        <div class="nav-item" onclick="showPage('schedule',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>
+          Schedule
+        </div>
+        <div class="nav-item" onclick="showPage('procedures',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+          Procedures
+        </div>
+        <div class="nav-item" onclick="showPage('doctors',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm.256 7a4.474 4.474 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10c.26 0 .507.009.74.025a4.548 4.548 0 0 1 .612-1.937A12.53 12.53 0 0 0 8 8c-2.136 0-3.826.726-4.966 1.81C1.867 10.965 1.5 12.242 1.5 13h13c0-.452-.082-.901-.246-1.328A4.533 4.533 0 0 1 13 12.5c-.77 0-1.496.19-2.129.526A4.482 4.482 0 0 1 8.256 14z"/><path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0z"/></svg>
+          Doctors
+        </div>
+        <div class="nav-item" onclick="showPage('patients',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+          Patients
+        </div>
+        <div class="sidebar-section">Analytics</div>
+        <div class="nav-item" onclick="showPage('analytics',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M0 11l2-2 4 4L14 2l2 2-10 10L0 11z"/></svg>
+          OT Efficiency
+        </div>
+        <div class="nav-item" onclick="showPage('resources',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M14.763.075A.5.5 0 0 1 15 .5v15a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V14h-1v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V10a.5.5 0 0 1 .342-.474L6 7.64V4.5a.5.5 0 0 1 .276-.447l8-4a.5.5 0 0 1 .487.022zM6 8.694L1 10.36V15h5V8.694zM7 15h2v-1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V15h2V1.309l-7 3.5V15z"/></svg>
+          Resources
+        </div>
+      </div>
+
+      <div id="nav-user" style="display:none;">
+        <div class="sidebar-section">User</div>
+        <div class="nav-item active" onclick="showPage('user-dashboard',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M0 2a2 2 0 0 1 2-2h3v7H0V2zm0 8h5v6H2a2 2 0 0 1-2-2v-4zm6 6V9h10v5a2 2 0 0 1-2 2H6zm0-15h10a2 2 0 0 1 2 2v4H6V1z"/></svg>
+          My Dashboard
+        </div>
+        <div class="nav-item" onclick="showPage('my-schedule',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5z"/></svg>
+          My Schedule
+        </div>
+        <div class="nav-item" onclick="showPage('doctor-list',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
+          Doctor Directory
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main-content">
+
+      <!-- ── ADMIN DASHBOARD ── -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div>
+            <h2>Dashboard</h2>
+            <p>Today's overview — <span id="today-date"></span></p>
+          </div>
+          <button class="btn-sm primary" onclick="openModal('modal-new-procedure')">+ New Procedure</button>
+        </div>
+        <div id="emerg-container"></div>
+        <div class="stats-row">
+          <div class="stat-card green">
+            <div class="stat-label">Scheduled Today</div>
+            <div class="stat-value" id="stat-today">0</div>
+            <div class="stat-sub">Across all OT rooms</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">In Progress</div>
+            <div class="stat-value" id="stat-progress">0</div>
+            <div class="stat-sub">Currently active</div>
+          </div>
+          <div class="stat-card teal">
+            <div class="stat-label">Completed</div>
+            <div class="stat-value" id="stat-completed">0</div>
+            <div class="stat-sub">This week</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">Emergencies</div>
+            <div class="stat-value" id="stat-emerg">0</div>
+            <div class="stat-sub">Pending triage</div>
+          </div>
+        </div>
+        <!-- OT Timeline -->
+        <div class="table-card" style="padding: 1rem 1.2rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
+            <h3 style="font-size:.95rem;font-weight:500;">Today's OT Timeline</h3>
+            <span style="font-size:.75rem;color:var(--text-muted);font-family:var(--font-mono);" id="timeline-date-label"></span>
+          </div>
+          <div class="time-ruler" id="time-ruler"></div>
+          <div id="ot-timeline"></div>
+        </div>
+        <!-- Recent procedures mini table -->
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3>Recent Procedures</h3>
+            <button class="btn-sm" onclick="showPage('procedures',document.querySelector('[onclick*=procedures]'))">View All</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Patient</th><th>Procedure</th><th>OT</th>
+                <th>Surgeon</th><th>Time</th><th>Status</th>
+              </tr></thead>
+              <tbody id="recent-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SCHEDULE (CALENDAR) ── -->
+      <div class="page" id="page-schedule">
+        <div class="page-header">
+          <div><h2>Schedule Calendar</h2><p>Browse and manage all OT procedures by date</p></div>
+          <button class="btn-sm primary" onclick="openModal('modal-new-procedure')">+ Book Procedure</button>
+        </div>
+        <div class="calendar-nav">
+          <button class="btn-sm" onclick="changeMonth(-1)">← Prev</button>
+          <span class="cal-month" id="cal-month-label"></span>
+          <button class="btn-sm" onclick="changeMonth(1)">Next →</button>
+        </div>
+        <div class="cal-grid-head">
+          <div class="cal-day-label">Sun</div><div class="cal-day-label">Mon</div>
+          <div class="cal-day-label">Tue</div><div class="cal-day-label">Wed</div>
+          <div class="cal-day-label">Thu</div><div class="cal-day-label">Fri</div>
+          <div class="cal-day-label">Sat</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <!-- ── PROCEDURES LIST ── -->
+      <div class="page" id="page-procedures">
+        <div class="page-header">
+          <div><h2>Procedures</h2><p>All scheduled surgical procedures</p></div>
+          <button class="btn-sm primary" onclick="openModal('modal-new-procedure')">+ Add Procedure</button>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3>All Procedures</h3>
+            <input class="toolbar-input" placeholder="Search patient / procedure…" oninput="filterProcedures(this.value)">
+            <select class="toolbar-input" style="width:130px;" onchange="filterStatus(this.value)">
+              <option value="">All Status</option>
+              <option>Scheduled</option><option>In Progress</option>
+              <option>Completed</option><option>Cancelled</option><option>Emergency</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Date</th><th>OT</th><th>Patient</th>
+                <th>Procedure</th><th>Surgeon</th><th>Anaesthetist</th>
+                <th>Status</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="proc-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DOCTORS ── -->
+      <div class="page" id="page-doctors">
+        <div class="page-header">
+          <div><h2>Doctors &amp; Staff</h2><p>Manage hospital personnel</p></div>
+          <button class="btn-sm primary" onclick="openModal('modal-new-doctor')">+ Add Doctor</button>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3>Medical Staff</h3>
+            <input class="toolbar-input" placeholder="Search name / speciality…" oninput="filterDoctors(this.value)">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Name</th><th>Specialisation</th><th>Role</th>
+                <th>Status</th><th>Upcoming Ops</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="doc-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PATIENTS ── -->
+      <div class="page" id="page-patients">
+        <div class="page-header">
+          <div><h2>Patients</h2><p>Patient registry and surgical history</p></div>
+          <button class="btn-sm primary" onclick="openModal('modal-new-patient')">+ Register Patient</button>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3>Patient Registry</h3>
+            <input class="toolbar-input" placeholder="Search name / ID…" oninput="filterPatients(this.value)">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Name</th><th>Age</th><th>Blood Type</th>
+                <th>Condition</th><th>Surgeon</th><th>Last Op</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="pat-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ANALYTICS ── -->
+      <div class="page" id="page-analytics">
+        <div class="page-header">
+          <div><h2>OT Efficiency Analytics</h2><p>Operating theater utilisation and performance metrics</p></div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card teal">
+            <div class="stat-label">Avg Utilisation</div>
+            <div class="stat-value">74%</div>
+            <div class="stat-sub">All OT rooms combined</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">On-time Rate</div>
+            <div class="stat-value">81%</div>
+            <div class="stat-sub">Procedures starting on time</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Avg Duration</div>
+            <div class="stat-value">112m</div>
+            <div class="stat-sub">Per procedure this month</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">Cancellation Rate</div>
+            <div class="stat-value">4.2%</div>
+            <div class="stat-sub">Vs 6.1% last month</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="table-card" style="padding:1.2rem;">
+            <h3 style="font-size:.9rem;font-weight:500;margin-bottom:1rem;">OT Room Utilisation</h3>
+            <div class="bar-chart" id="ot-bars"></div>
+          </div>
+          <div class="table-card" style="padding:1.2rem;">
+            <h3 style="font-size:.9rem;font-weight:500;margin-bottom:1rem;">Procedures by Speciality</h3>
+            <div class="bar-chart" id="spec-bars"></div>
+          </div>
+        </div>
+        <div class="table-card" style="margin-top:1rem;">
+          <div class="table-toolbar"><h3>Monthly Procedure Log</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Month</th><th>Total Ops</th><th>Completed</th><th>Cancelled</th>
+                <th>Emergency</th><th>Avg Duration</th><th>Utilisation</th>
+              </tr></thead>
+              <tbody id="monthly-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RESOURCES ── -->
+      <div class="page" id="page-resources">
+        <div class="page-header">
+          <div><h2>Resource Management</h2><p>Instruments, drugs, and OT room availability</p></div>
+        </div>
+        <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
+          <div class="stat-card green"><div class="stat-label">OT Rooms</div><div class="stat-value">6</div><div class="stat-sub">3 currently available</div></div>
+          <div class="stat-card amber"><div class="stat-label">Instruments</div><div class="stat-value">248</div><div class="stat-sub">12 pending sterilisation</div></div>
+          <div class="stat-card teal"><div class="stat-label">Drug Stock</div><div class="stat-value">94%</div><div class="stat-sub">All critical items in stock</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="table-card">
+            <div class="table-toolbar"><h3>OT Room Status</h3></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Room</th><th>Type</th><th>Status</th><th>Next Available</th></tr></thead>
+                <tbody id="ot-room-table"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="table-card">
+            <div class="table-toolbar"><h3>Critical Instruments</h3></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Item</th><th>Qty</th><th>Status</th></tr></thead>
+                <tbody id="instrument-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USER DASHBOARD ── -->
+      <div class="page" id="page-user-dashboard">
+        <div class="page-header">
+          <div><h2>My Dashboard</h2><p>Your upcoming procedures and schedule</p></div>
+        </div>
+        <div class="profile-card" id="user-profile-card"></div>
+        <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
+          <div class="stat-card green"><div class="stat-label">Next Procedure</div><div class="stat-value" id="u-next" style="font-size:1.1rem;">—</div><div class="stat-sub" id="u-next-sub"></div></div>
+          <div class="stat-card teal"><div class="stat-label">This Week</div><div class="stat-value" id="u-week">0</div><div class="stat-sub">Procedures assigned</div></div>
+          <div class="stat-card amber"><div class="stat-label">This Month</div><div class="stat-value" id="u-month">0</div><div class="stat-sub">Total procedures</div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar"><h3>My Upcoming Procedures</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Patient</th><th>Procedure</th><th>OT</th><th>Role</th><th>Status</th></tr></thead>
+              <tbody id="user-proc-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MY SCHEDULE ── -->
+      <div class="page" id="page-my-schedule">
+        <div class="page-header">
+          <div><h2>My Schedule</h2><p>Your personal calendar view</p></div>
+        </div>
+        <div class="calendar-nav">
+          <button class="btn-sm" onclick="changeMonth(-1)">← Prev</button>
+          <span class="cal-month" id="cal-month-label2"></span>
+          <button class="btn-sm" onclick="changeMonth(1)">Next →</button>
+        </div>
+        <div class="cal-grid-head">
+          <div class="cal-day-label">Sun</div><div class="cal-day-label">Mon</div>
+          <div class="cal-day-label">Tue</div><div class="cal-day-label">Wed</div>
+          <div class="cal-day-label">Thu</div><div class="cal-day-label">Fri</div>
+          <div class="cal-day-label">Sat</div>
+        </div>
+        <div class="cal-grid" id="cal-grid2"></div>
+      </div>
+
+      <!-- ── DOCTOR LIST (User) ── -->
+      <div class="page" id="page-doctor-list">
+        <div class="page-header">
+          <div><h2>Doctor Directory</h2><p>View hospital medical staff</p></div>
+        </div>
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3>All Doctors</h3>
+            <input class="toolbar-input" placeholder="Search…" oninput="filterDoctors(this.value)">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Specialisation</th><th>Role</th><th>Status</th></tr></thead>
+              <tbody id="pub-doc-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════ -->
+
+<!-- New Procedure -->
+<div class="modal-overlay" id="modal-new-procedure">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Book New Procedure</h3>
+      <button class="modal-close" onclick="closeModal('modal-new-procedure')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Date</label>
+        <input type="date" id="np-date">
+      </div>
+      <div class="form-field">
+        <label>OT Room</label>
+        <select id="np-ot">
+          <option>OT-1 — General</option><option>OT-2 — Cardiac</option>
+          <option>OT-3 — Neuro</option><option>OT-4 — Ortho</option>
+          <option>OT-5 — Paeds</option><option>OT-6 — Laparoscopy</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Start Time</label>
+        <input type="time" id="np-time" value="08:00">
+      </div>
+      <div class="form-field">
+        <label>Est. Duration (min)</label>
+        <input type="number" id="np-duration" value="90" min="15" max="600">
+      </div>
+      <div class="form-field">
+        <label>Patient</label>
+        <select id="np-patient"></select>
+      </div>
+      <div class="form-field">
+        <label>Procedure Type</label>
+        <input type="text" id="np-proc" placeholder="e.g. Appendectomy">
+      </div>
+      <div class="form-field">
+        <label>Lead Surgeon</label>
+        <select id="np-surgeon"></select>
+      </div>
+      <div class="form-field">
+        <label>Assistant Surgeon</label>
+        <select id="np-asst"></select>
+      </div>
+      <div class="form-field">
+        <label>Anaesthesiologist</label>
+        <select id="np-anaes"></select>
+      </div>
+      <div class="form-field">
+        <label>Anaesthesia Type</label>
+        <select id="np-anaes-type">
+          <option>General</option><option>Regional</option>
+          <option>Spinal</option><option>Epidural</option><option>Local</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Scrub Nurse</label>
+        <input type="text" id="np-nurse" placeholder="Nurse name(s)">
+      </div>
+      <div class="form-field">
+        <label>Priority</label>
+        <select id="np-priority">
+          <option>Elective</option><option>Urgent</option><option>Emergency</option>
+        </select>
+      </div>
+      <div class="form-field span2">
+        <label>Required Instruments / Drugs</label>
+        <input type="text" id="np-instruments" placeholder="e.g. Laparoscope set, Propofol 200mg, Fentanyl">
+      </div>
+      <div class="form-field span2">
+        <label>Pre-operative Notes</label>
+        <textarea id="np-pre-notes" placeholder="Pre-op observations, allergies, consent status…"></textarea>
+      </div>
+      <div class="form-field span2">
+        <label>Remarks</label>
+        <textarea id="np-remarks" placeholder="Additional notes or special requirements…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-lg btn-ghost" onclick="closeModal('modal-new-procedure')">Cancel</button>
+      <button class="btn-lg btn-accent" onclick="saveProcedure()">Book Procedure</button>
+    </div>
+  </div>
+</div>
+
+<!-- Procedure Detail -->
+<div class="modal-overlay" id="modal-proc-detail">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="detail-title">Procedure Detail</h3>
+      <button class="modal-close" onclick="closeModal('modal-proc-detail')">✕</button>
+    </div>
+    <div id="modal-detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn-lg btn-ghost" onclick="closeModal('modal-proc-detail')">Close</button>
+      <button class="btn-lg btn-accent" id="btn-status-update" onclick="updateStatus()">Update Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Doctor -->
+<div class="modal-overlay" id="modal-new-doctor">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Doctor / Staff</h3>
+      <button class="modal-close" onclick="closeModal('modal-new-doctor')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Full Name</label><input type="text" id="nd-name" placeholder="Dr. John Doe"></div>
+      <div class="form-field"><label>Specialisation</label><input type="text" id="nd-spec" placeholder="Cardiothoracic Surgery"></div>
+      <div class="form-field"><label>Role</label>
+        <select id="nd-role">
+          <option>Surgeon</option><option>Anaesthesiologist</option>
+          <option>Nurse</option><option>Assistant Surgeon</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Contact</label><input type="text" id="nd-contact" placeholder="+91 98765 43210"></div>
+      <div class="form-field"><label>Email</label><input type="email" id="nd-email" placeholder="doctor@hospital.org"></div>
+      <div class="form-field"><label>Status</label>
+        <select id="nd-status"><option>Active</option><option>On Leave</option><option>Inactive</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-lg btn-ghost" onclick="closeModal('modal-new-doctor')">Cancel</button>
+      <button class="btn-lg btn-accent" onclick="saveDoctor()">Add to System</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Patient -->
+<div class="modal-overlay" id="modal-new-patient">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Register Patient</h3>
+      <button class="modal-close" onclick="closeModal('modal-new-patient')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Full Name</label><input type="text" id="npt-name" placeholder="Patient Full Name"></div>
+      <div class="form-field"><label>Age</label><input type="number" id="npt-age" placeholder="45" min="0" max="120"></div>
+      <div class="form-field"><label>Gender</label>
+        <select id="npt-gender"><option>Male</option><option>Female</option><option>Other</option></select>
+      </div>
+      <div class="form-field"><label>Blood Type</label>
+        <select id="npt-blood">
+          <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+          <option>AB+</option><option>AB−</option><option>O+</option><option>O−</option>
+        </select>
+      </div>
+      <div class="form-field span2"><label>Diagnosis / Condition</label><input type="text" id="npt-cond" placeholder="Primary diagnosis"></div>
+      <div class="form-field span2"><label>Allergies / Contraindications</label><textarea id="npt-allergy" placeholder="Known drug allergies or contraindications…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-lg btn-ghost" onclick="closeModal('modal-new-patient')">Cancel</button>
+      <button class="btn-lg btn-accent" onclick="savePatient()">Register Patient</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+// ── State ──────────────────────────────────────
+let currentUser = null;
+let currentRole = 'admin';
+let currentPage = '';
+let calMonth, calYear;
+let selectedProcedureId = null;
+
+const PROCEDURES_KEY = 'ot_procedures';
+const DOCTORS_KEY    = 'ot_doctors';
+const PATIENTS_KEY   = 'ot_patients';
+
+// ── Seed Data ──────────────────────────────────
+const seedDoctors = [
+  {id:'D001',name:'Dr. Arjun Mehta',spec:'Cardiothoracic Surgery',role:'Surgeon',contact:'+91 98001 11111',email:'arjun@hosp.org',status:'Active'},
+  {id:'D002',name:'Dr. Priya Sharma',spec:'Neurosurgery',role:'Surgeon',contact:'+91 98001 22222',email:'priya@hosp.org',status:'Active'},
+  {id:'D003',name:'Dr. Rahul Nair',spec:'Orthopaedics',role:'Surgeon',contact:'+91 98001 33333',email:'rahul@hosp.org',status:'Active'},
+  {id:'D004',name:'Dr. Sunita Rao',spec:'Anaesthesiology',role:'Anaesthesiologist',contact:'+91 98001 44444',email:'sunita@hosp.org',status:'Active'},
+  {id:'D005',name:'Dr. Vivek Gupta',spec:'Paediatric Surgery',role:'Surgeon',contact:'+91 98001 55555',email:'vivek@hosp.org',status:'On Leave'},
+  {id:'D006',name:'Dr. Meena Patel',spec:'Anaesthesiology',role:'Anaesthesiologist',contact:'+91 98001 66666',email:'meena@hosp.org',status:'Active'},
+  {id:'D007',name:'Nurse Kavitha',spec:'Theatre Nursing',role:'Nurse',contact:'+91 98001 77777',email:'kavitha@hosp.org',status:'Active'},
+];
+const seedPatients = [
+  {id:'P001',name:'Rajesh Kumar',age:54,gender:'Male',blood:'B+',condition:'Coronary Artery Disease',allergies:'Penicillin',surgeon:'Dr. Arjun Mehta',lastOp:'2025-11-12'},
+  {id:'P002',name:'Fatima Shaikh',age:34,gender:'Female',blood:'O+',condition:'Brain Tumour (Meningioma)',allergies:'None',surgeon:'Dr. Priya Sharma',lastOp:'2026-01-08'},
+  {id:'P003',name:'George Thomas',age:67,gender:'Male',blood:'A+',condition:'Hip Fracture',allergies:'Latex',surgeon:'Dr. Rahul Nair',lastOp:'2026-02-20'},
+  {id:'P004',name:'Lakshmi Devi',age:29,gender:'Female',blood:'AB-',condition:'Appendicitis (Acute)',allergies:'Sulfa',surgeon:'Dr. Arjun Mehta',lastOp:null},
+  {id:'P005',name:'Mohammed Iqbal',age:45,gender:'Male',blood:'O-',condition:'Lumbar Disc Herniation',allergies:'NSAIDs',surgeon:'Dr. Priya Sharma',lastOp:'2025-09-30'},
+];
+const today = new Date();
+const todayStr = today.toISOString().slice(0,10);
+function fmtDt(offset, hour, min='00') {
+  const d = new Date(today); d.setDate(d.getDate()+offset);
+  return d.toISOString().slice(0,10)+'T'+String(hour).padStart(2,'0')+':'+min+':00';
+}
+const seedProcedures = [
+  {id:'OP001',date:todayStr,time:'08:00',ot:'OT-2 — Cardiac',patient:'Rajesh Kumar',patientId:'P001',procedure:'Coronary Artery Bypass Graft (CABG)',surgeon:'Dr. Arjun Mehta',asst:'Dr. Rahul Nair',anaes:'Dr. Sunita Rao',anaesType:'General',nurse:'Nurse Kavitha',priority:'Urgent',duration:240,status:'In Progress',instruments:'Heart-lung bypass set, Sternotomy kit, Prolene 4-0',preNotes:'Patient consented. Hb 11.2. Echo done.',postNotes:'',remarks:'Ensure blood products on standby',createdAt:fmtDt(-1,7)},
+  {id:'OP002',date:todayStr,time:'11:00',ot:'OT-3 — Neuro',patient:'Fatima Shaikh',patientId:'P002',procedure:'Craniotomy — Meningioma Excision',surgeon:'Dr. Priya Sharma',asst:'Dr. Vivek Gupta',anaes:'Dr. Meena Patel',anaesType:'General',nurse:'Nurse Kavitha',priority:'Elective',duration:180,status:'Scheduled',instruments:'Craniotomy set, Bipolar forceps, Dural patch',preNotes:'MRI done. Pre-op steroids given.',postNotes:'',remarks:'Neuro ICU bed reserved',createdAt:fmtDt(-2,9)},
+  {id:'OP003',date:todayStr,time:'14:00',ot:'OT-4 — Ortho',patient:'George Thomas',patientId:'P003',procedure:'Total Hip Replacement',surgeon:'Dr. Rahul Nair',asst:'',anaes:'Dr. Sunita Rao',anaesType:'Spinal',nurse:'Nurse Kavitha',priority:'Elective',duration:120,status:'Scheduled',instruments:'Hip prosthesis (size 52), Ortho set',preNotes:'Latex allergy flagged — latex-free gloves.',postNotes:'',remarks:'',createdAt:fmtDt(-3,8)},
+  {id:'OP004',date:todayStr,time:'16:30',ot:'OT-1 — General',patient:'Lakshmi Devi',patientId:'P004',procedure:'Laparoscopic Appendectomy',surgeon:'Dr. Arjun Mehta',asst:'',anaes:'Dr. Meena Patel',anaesType:'General',nurse:'Nurse Kavitha',priority:'Emergency',duration:60,status:'Scheduled',instruments:'Laparoscope set, Endostapler, Trocar 5/10mm',preNotes:'Peritoneal signs present. Consent obtained.',postNotes:'',remarks:'Emergency case — bumped elective list',createdAt:fmtDt(0,15)},
+  {id:'OP005',date:new Date(today.getTime()+86400000).toISOString().slice(0,10),time:'09:00',ot:'OT-3 — Neuro',patient:'Mohammed Iqbal',patientId:'P005',procedure:'L4-L5 Microdiscectomy',surgeon:'Dr. Priya Sharma',asst:'',anaes:'Dr. Sunita Rao',anaesType:'General',nurse:'Nurse Kavitha',priority:'Elective',duration:90,status:'Scheduled',instruments:'Microscope, Micro-disc set, Kerrison rongeur',preNotes:'MRI confirmed herniation. NSAIDs stopped 7d pre-op.',postNotes:'',remarks:'',createdAt:fmtDt(-1,10)},
+  {id:'OP006',date:new Date(today.getTime()-86400000*3).toISOString().slice(0,10),time:'08:30',ot:'OT-2 — Cardiac',patient:'Rajesh Kumar',patientId:'P001',procedure:'Pre-admission Angioplasty',surgeon:'Dr. Arjun Mehta',asst:'',anaes:'Dr. Sunita Rao',anaesType:'Regional',nurse:'Nurse Kavitha',priority:'Urgent',duration:90,status:'Completed',instruments:'Cath lab set, Balloon catheter, Stent 3.5mm',preNotes:'',postNotes:'Successful. No complications.',remarks:'',createdAt:fmtDt(-5,7)},
+];
+
+// ── LocalStorage helpers ────────────────────────
+function getData(key, seed) {
+  const s = localStorage.getItem(key);
+  if (!s) { localStorage.setItem(key, JSON.stringify(seed)); return seed; }
+  return JSON.parse(s);
+}
+function setData(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+function getProcedures() { return getData(PROCEDURES_KEY, seedProcedures); }
+function getDoctors()    { return getData(DOCTORS_KEY,    seedDoctors);    }
+function getPatients()   { return getData(PATIENTS_KEY,   seedPatients);   }
+
+// ── Auth ───────────────────────────────────────
+function switchAuthTab(tab, el) {
+  document.getElementById('tab-login').style.display    = tab==='login'    ? '' : 'none';
+  document.getElementById('tab-register').style.display = tab==='register' ? '' : 'none';
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+let _role = 'admin';
+function selectRole(r, el) {
+  _role = r;
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showToast('Enter your email or staff ID','error'); return; }
+  currentUser = { name: email.split('@')[0] || email, role: _role, email };
+  currentRole = _role;
+  bootApp();
+}
+function doRegister() {
+  const fn = document.getElementById('reg-fname').value.trim();
+  const ln = document.getElementById('reg-lname').value.trim();
+  const em = document.getElementById('reg-email').value.trim();
+  if (!fn||!ln||!em) { showToast('Please fill all required fields','error'); return; }
+  currentUser = { name: fn+' '+ln, role: 'staff', email: em };
+  currentRole = 'staff';
+  bootApp();
+}
+function doLogout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  currentUser = null;
+}
+function bootApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const initials = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('topbar-initials').textContent = initials;
+  document.getElementById('topbar-name').textContent = currentUser.name;
+  // Show correct nav
+  const isAdmin = currentRole === 'admin';
+  document.getElementById('nav-admin').style.display = isAdmin ? '' : 'none';
+  document.getElementById('nav-user').style.display  = isAdmin ? 'none' : '';
+  if (isAdmin) {
+    showPage('dashboard', document.querySelector('#nav-admin .nav-item'));
+  } else {
+    showPage('user-dashboard', document.querySelector('#nav-user .nav-item'));
+  }
+  populateModalDropdowns();
+}
+
+// ── Navigation ─────────────────────────────────
+function showPage(id, navEl) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg = document.getElementById('page-'+id);
+  if (pg) pg.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  currentPage = id;
+  renderPage(id);
+}
+function renderPage(id) {
+  if (id==='dashboard')      renderDashboard();
+  if (id==='schedule')       renderCalendar('cal-grid','cal-month-label');
+  if (id==='procedures')     renderProcTable(getProcedures());
+  if (id==='doctors')        renderDocTable(getDoctors());
+  if (id==='patients')       renderPatTable(getPatients());
+  if (id==='analytics')      renderAnalytics();
+  if (id==='resources')      renderResources();
+  if (id==='user-dashboard') renderUserDashboard();
+  if (id==='my-schedule')    renderCalendar('cal-grid2','cal-month-label2');
+  if (id==='doctor-list')    renderPubDocTable();
+}
+
+// ── Dashboard ──────────────────────────────────
+function renderDashboard() {
+  document.getElementById('today-date').textContent = today.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const procs = getProcedures();
+  const todayProcs = procs.filter(p=>p.date===todayStr);
+  document.getElementById('stat-today').textContent = todayProcs.length;
+  document.getElementById('stat-progress').textContent = procs.filter(p=>p.status==='In Progress').length;
+  document.getElementById('stat-completed').textContent = procs.filter(p=>p.status==='Completed').length;
+  const emergs = procs.filter(p=>p.priority==='Emergency'&&p.status==='Scheduled');
+  document.getElementById('stat-emerg').textContent = emergs.length;
+  // Emergency banner
+  const ec = document.getElementById('emerg-container');
+  ec.innerHTML = '';
+  emergs.forEach(e=>{
+    ec.innerHTML += `<div class="emerg-banner"><div class="emerg-dot"></div><strong>EMERGENCY</strong> — ${e.procedure} for ${e.patient} scheduled at ${e.time} in ${e.ot}</div>`;
+  });
+  renderTimeline(todayProcs);
+  // Recent table
+  const tbody = document.getElementById('recent-table');
+  tbody.innerHTML = '';
+  procs.slice(-6).reverse().forEach(p=>{
+    tbody.innerHTML += `<tr>
+      <td>${p.patient}</td>
+      <td>${p.procedure}</td>
+      <td class="cell-mono">${p.ot.split(' — ')[0]}</td>
+      <td>${p.surgeon}</td>
+      <td class="cell-mono">${p.date} ${p.time}</td>
+      <td>${statusPill(p.status)}</td>
+    </tr>`;
+  });
+  document.getElementById('timeline-date-label').textContent = today.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function renderTimeline(procs) {
+  const hours = [7,9,11,13,15,17,19];
+  const ruler = document.getElementById('time-ruler');
+  ruler.innerHTML = hours.map(h=>`<div class="time-tick">${String(h).padStart(2,'0')}:00</div>`).join('');
+  const rooms = ['OT-1','OT-2','OT-3','OT-4','OT-5','OT-6'];
+  const tl = document.getElementById('ot-timeline');
+  tl.innerHTML = '';
+  const startH=7, totalH=13; // 07:00 – 20:00
+  rooms.forEach(room=>{
+    const row = document.createElement('div');
+    row.className='ot-row';
+    const label = document.createElement('div');
+    label.className='ot-label'; label.textContent=room;
+    row.appendChild(label);
+    const track = document.createElement('div');
+    track.className='ot-track';
+    procs.filter(p=>p.ot.startsWith(room)).forEach(p=>{
+      const [h,m] = p.time.split(':').map(Number);
+      const left=((h-startH)*60+m)/(totalH*60)*100;
+      const width=(p.duration/(totalH*60))*100;
+      const slot = document.createElement('div');
+      slot.className='ot-slot'+(p.priority==='Emergency'?' emergency':'');
+      slot.style.left=Math.max(0,left)+'%';
+      slot.style.width=Math.max(4,Math.min(width,100-left))+'%';
+      slot.innerHTML=`<span class="ot-slot-label">${p.procedure.split(' ')[0]}</span>`;
+      slot.onclick=()=>openProcDetail(p.id);
+      track.appendChild(slot);
+    });
+    row.appendChild(track);
+    tl.appendChild(row);
+  });
+}
+
+// ── Calendar ────────────────────────────────────
+function initCal() {
+  calMonth = today.getMonth();
+  calYear  = today.getFullYear();
+}
+function changeMonth(d) {
+  calMonth += d;
+  if (calMonth>11){ calMonth=0; calYear++; }
+  if (calMonth<0 ){ calMonth=11; calYear--; }
+  if (currentPage==='schedule')    renderCalendar('cal-grid','cal-month-label');
+  if (currentPage==='my-schedule') renderCalendar('cal-grid2','cal-month-label2');
+}
+function renderCalendar(gridId, labelId) {
+  if (calMonth===undefined) initCal();
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById(labelId).textContent = months[calMonth]+' '+calYear;
+  const procs = getProcedures();
+  const grid = document.getElementById(gridId);
+  grid.innerHTML='';
+  const first = new Date(calYear,calMonth,1);
+  const last  = new Date(calYear,calMonth+1,0);
+  const startDay = first.getDay();
+  // blank cells
+  for(let i=0;i<startDay;i++){
+    const cell=document.createElement('div'); cell.className='cal-cell outside';
+    const prev=new Date(calYear,calMonth,0-(startDay-1-i));
+    cell.innerHTML=`<span class="cal-date">${prev.getDate()}</span>`;
+    grid.appendChild(cell);
+  }
+  for(let d=1;d<=last.getDate();d++){
+    const ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const cell=document.createElement('div');
+    const isToday = ds===todayStr;
+    cell.className='cal-cell'+(isToday?' today':'');
+    cell.innerHTML=`<span class="cal-date">${d}</span>`;
+    procs.filter(p=>p.date===ds).slice(0,3).forEach(p=>{
+      const ev=document.createElement('div');
+      ev.className='cal-event'+(p.priority==='Emergency'?' urgent':'');
+      ev.textContent=p.time+' '+p.procedure.split(' ')[0];
+      ev.onclick=(e)=>{e.stopPropagation();openProcDetail(p.id);};
+      cell.appendChild(ev);
+    });
+    grid.appendChild(cell);
+  }
+}
+
+// ── Procedures Table ───────────────────────────
+function renderProcTable(procs) {
+  const tb = document.getElementById('proc-table');
+  tb.innerHTML='';
+  procs.forEach(p=>{
+    tb.innerHTML+=`<tr>
+      <td class="cell-mono">${p.id}</td>
+      <td class="cell-mono">${p.date}</td>
+      <td class="cell-mono">${p.ot.split(' — ')[0]}</td>
+      <td>${p.patient}</td>
+      <td>${p.procedure}</td>
+      <td>${p.surgeon}</td>
+      <td>${p.anaes}</td>
+      <td>${statusPill(p.status)}</td>
+      <td>
+        <button class="btn-sm" onclick="openProcDetail('${p.id}')">View</button>
+        <button class="btn-sm danger" onclick="cancelProc('${p.id}')">Cancel</button>
+      </td>
+    </tr>`;
+  });
+}
+function filterProcedures(q) {
+  const lower=q.toLowerCase();
+  renderProcTable(getProcedures().filter(p=>
+    p.patient.toLowerCase().includes(lower)||p.procedure.toLowerCase().includes(lower)
+  ));
+}
+function filterStatus(s) {
+  renderProcTable(s ? getProcedures().filter(p=>p.status===s) : getProcedures());
+}
+function cancelProc(id) {
+  const procs=getProcedures();
+  const idx=procs.findIndex(p=>p.id===id);
+  if(idx>=0){ procs[idx].status='Cancelled'; setData(PROCEDURES_KEY,procs); }
+  renderProcTable(procs); showToast('Procedure cancelled','warn');
+}
+
+// ── Procedure Detail ───────────────────────────
+function openProcDetail(id) {
+  const procs=getProcedures();
+  const p=procs.find(x=>x.id===id);
+  if(!p) return;
+  selectedProcedureId=id;
+  document.getElementById('detail-title').textContent=p.procedure;
+  document.getElementById('modal-detail-body').innerHTML=`
+    ${p.priority==='Emergency'?`<div class="emerg-banner" style="margin-bottom:1rem;"><div class="emerg-dot"></div><strong>Emergency Procedure</strong></div>`:''}
+    <div class="detail-grid">
+      <div class="detail-item"><label>Patient</label><span>${p.patient}</span></div>
+      <div class="detail-item"><label>OT Room</label><span>${p.ot}</span></div>
+      <div class="detail-item"><label>Date &amp; Time</label><span class="cell-mono">${p.date} — ${p.time}</span></div>
+      <div class="detail-item"><label>Duration (est.)</label><span>${p.duration} min</span></div>
+      <div class="detail-item"><label>Status</label><span>${statusPill(p.status)}</span></div>
+      <div class="detail-item"><label>Priority</label><span>${p.priority}</span></div>
+    </div>
+    <div class="section-divider">Surgical Team</div>
+    <div class="detail-grid">
+      <div class="detail-item"><label>Lead Surgeon</label><span>${p.surgeon}</span></div>
+      <div class="detail-item"><label>Assistant Surgeon</label><span>${p.asst||'—'}</span></div>
+      <div class="detail-item"><label>Anaesthesiologist</label><span>${p.anaes}</span></div>
+      <div class="detail-item"><label>Anaesthesia Type</label><span>${p.anaesType}</span></div>
+      <div class="detail-item"><label>Scrub Nurse</label><span>${p.nurse}</span></div>
+    </div>
+    <div class="section-divider">Clinical Notes</div>
+    <div class="detail-grid">
+      <div class="detail-item span2" style="grid-column:1/-1"><label>Required Instruments / Drugs</label><span style="font-size:.82rem;font-family:var(--font-mono);">${p.instruments||'—'}</span></div>
+      <div class="detail-item span2" style="grid-column:1/-1"><label>Pre-operative Notes</label><span style="font-size:.83rem;">${p.preNotes||'—'}</span></div>
+      <div class="detail-item span2" style="grid-column:1/-1"><label>Post-operative Notes</label><span style="font-size:.83rem;">${p.postNotes||'None recorded'}</span></div>
+      <div class="detail-item span2" style="grid-column:1/-1"><label>Remarks</label><span style="font-size:.83rem;">${p.remarks||'—'}</span></div>
+    </div>
+    <div class="section-divider">Update Status</div>
+    <div class="form-field">
+      <select id="status-select" style="width:220px;padding:.5rem .8rem;background:var(--navy);border:1px solid var(--navy-border);border-radius:var(--radius);color:var(--text-primary);font-family:var(--font-main);">
+        <option ${p.status==='Scheduled'?'selected':''}>Scheduled</option>
+        <option ${p.status==='In Progress'?'selected':''}>In Progress</option>
+        <option ${p.status==='Completed'?'selected':''}>Completed</option>
+        <option ${p.status==='Cancelled'?'selected':''}>Cancelled</option>
+      </select>
+    </div>
+  `;
+  openModal('modal-proc-detail');
+}
+function updateStatus() {
+  const newStatus=document.getElementById('status-select').value;
+  const procs=getProcedures();
+  const idx=procs.findIndex(p=>p.id===selectedProcedureId);
+  if(idx>=0){ procs[idx].status=newStatus; setData(PROCEDURES_KEY,procs); }
+  closeModal('modal-proc-detail');
+  showToast('Status updated to: '+newStatus,'success');
+  renderPage(currentPage);
+}
+
+// ── Doctors ────────────────────────────────────
+function renderDocTable(docs) {
+  const procs=getProcedures();
+  const tb=document.getElementById('doc-table');
+  if(!tb) return;
+  tb.innerHTML='';
+  docs.forEach(d=>{
+    const upcoming=procs.filter(p=>p.surgeon===d.name&&p.status==='Scheduled').length;
+    tb.innerHTML+=`<tr>
+      <td><strong>${d.name}</strong></td>
+      <td>${d.spec}</td>
+      <td>${d.role}</td>
+      <td>${statusPill(d.status)}</td>
+      <td class="cell-mono">${upcoming}</td>
+      <td><button class="btn-sm danger" onclick="removeDoctor('${d.id}')">Remove</button></td>
+    </tr>`;
+  });
+}
+function filterDoctors(q) {
+  const lower=q.toLowerCase();
+  const filtered=getDoctors().filter(d=>d.name.toLowerCase().includes(lower)||d.spec.toLowerCase().includes(lower));
+  renderDocTable(filtered);
+  renderPubDocTable(filtered);
+}
+function renderPubDocTable(docs) {
+  docs=docs||getDoctors();
+  const tb=document.getElementById('pub-doc-table');
+  if(!tb) return;
+  tb.innerHTML='';
+  docs.forEach(d=>{
+    tb.innerHTML+=`<tr>
+      <td><strong>${d.name}</strong></td>
+      <td>${d.spec}</td>
+      <td>${d.role}</td>
+      <td>${statusPill(d.status)}</td>
+    </tr>`;
+  });
+}
+function removeDoctor(id) {
+  const docs=getDoctors().filter(d=>d.id!==id);
+  setData(DOCTORS_KEY,docs); renderDocTable(docs); showToast('Doctor removed','warn');
+}
+function saveDoctor() {
+  const name=document.getElementById('nd-name').value.trim();
+  if(!name){showToast('Name is required','error');return;}
+  const docs=getDoctors();
+  const newDoc={
+    id:'D'+String(docs.length+1).padStart(3,'0'),
+    name,spec:document.getElementById('nd-spec').value,
+    role:document.getElementById('nd-role').value,
+    contact:document.getElementById('nd-contact').value,
+    email:document.getElementById('nd-email').value,
+    status:document.getElementById('nd-status').value
+  };
+  docs.push(newDoc); setData(DOCTORS_KEY,docs);
+  closeModal('modal-new-doctor'); renderDocTable(docs);
+  showToast('Doctor added successfully','success');
+  populateModalDropdowns();
+}
+
+// ── Patients ───────────────────────────────────
+function renderPatTable(pats) {
+  const tb=document.getElementById('pat-table');
+  if(!tb) return;
+  tb.innerHTML='';
+  pats.forEach(p=>{
+    tb.innerHTML+=`<tr>
+      <td class="cell-mono">${p.id}</td>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.age}</td>
+      <td class="cell-mono">${p.blood}</td>
+      <td>${p.condition}</td>
+      <td>${p.surgeon}</td>
+      <td class="cell-mono">${p.lastOp||'—'}</td>
+      <td><button class="btn-sm" onclick="viewPatient('${p.id}')">View</button></td>
+    </tr>`;
+  });
+}
+function filterPatients(q) {
+  const lower=q.toLowerCase();
+  renderPatTable(getPatients().filter(p=>p.name.toLowerCase().includes(lower)||p.id.toLowerCase().includes(lower)));
+}
+function savePatient() {
+  const name=document.getElementById('npt-name').value.trim();
+  if(!name){showToast('Name is required','error');return;}
+  const pats=getPatients();
+  const newPat={
+    id:'P'+String(pats.length+1).padStart(3,'0'),
+    name,age:document.getElementById('npt-age').value,
+    gender:document.getElementById('npt-gender').value,
+    blood:document.getElementById('npt-blood').value,
+    condition:document.getElementById('npt-cond').value,
+    allergies:document.getElementById('npt-allergy').value,
+    surgeon:'—',lastOp:null
+  };
+  pats.push(newPat); setData(PATIENTS_KEY,pats);
+  closeModal('modal-new-patient'); renderPatTable(pats);
+  showToast('Patient registered','success');
+  populateModalDropdowns();
+}
+function viewPatient(id) {
+  const p=getPatients().find(x=>x.id===id);
+  if(!p) return;
+  alert(`Patient: ${p.name}\nAge: ${p.age} | Blood: ${p.blood} | Gender: ${p.gender}\nCondition: ${p.condition}\nAllergies: ${p.allergies||'None'}\nSurgeon: ${p.surgeon}\nLast Op: ${p.lastOp||'None'}`);
+}
+
+// ── Save Procedure ─────────────────────────────
+function saveProcedure() {
+  const date=document.getElementById('np-date').value;
+  const proc=document.getElementById('np-proc').value.trim();
+  const pat=document.getElementById('np-patient').value;
+  if(!date||!proc||!pat){showToast('Date, patient, and procedure are required','error');return;}
+  const procs=getProcedures();
+  const id='OP'+String(procs.length+1).padStart(3,'0');
+  procs.push({
+    id,date,time:document.getElementById('np-time').value,
+    ot:document.getElementById('np-ot').value,
+    patient:pat,patientId:'',procedure:proc,
+    surgeon:document.getElementById('np-surgeon').value,
+    asst:document.getElementById('np-asst').value,
+    anaes:document.getElementById('np-anaes').value,
+    anaesType:document.getElementById('np-anaes-type').value,
+    nurse:document.getElementById('np-nurse').value,
+    priority:document.getElementById('np-priority').value,
+    duration:parseInt(document.getElementById('np-duration').value)||90,
+    status:'Scheduled',
+    instruments:document.getElementById('np-instruments').value,
+    preNotes:document.getElementById('np-pre-notes').value,
+    postNotes:'',
+    remarks:document.getElementById('np-remarks').value,
+    createdAt:new Date().toISOString()
+  });
+  setData(PROCEDURES_KEY,procs);
+  closeModal('modal-new-procedure');
+  showToast('Procedure booked: '+id,'success');
+  renderPage(currentPage);
+}
+
+// ── Analytics ──────────────────────────────────
+function renderAnalytics() {
+  const otData = [
+    {room:'OT-1',pct:68},{room:'OT-2',pct:89},{room:'OT-3',pct:72},
+    {room:'OT-4',pct:55},{room:'OT-5',pct:40},{room:'OT-6',pct:82}
+  ];
+  const specData = [
+    {spec:'Cardiac',pct:32},{spec:'Neuro',pct:24},{spec:'Ortho',pct:18},
+    {spec:'Paeds',pct:10},{spec:'General',pct:16}
+  ];
+  function renderBars(containerId, data) {
+    const el=document.getElementById(containerId);
+    if(!el) return;
+    el.innerHTML=data.map(d=>`
+      <div class="bar-row" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div class="bar-label">${d.room||d.spec}</div>
+        <div class="bar-track" style="flex:1;background:rgba(255,255,255,0.06);border-radius:99px;height:10px;overflow:hidden;">
+          <div class="bar-fill" style="height:100%;border-radius:99px;background:var(--steel);width:${d.pct}%;"></div>
+        </div>
+        <div class="bar-pct">${d.pct}%</div>
+      </div>`).join('');
+  }
+  renderBars('ot-bars',otData); renderBars('spec-bars',specData);
+  const months=['Oct','Nov','Dec','Jan','Feb','Mar'];
+  const monthData=[
+    {m:'Oct 2025',t:42,c:39,x:3,e:2,avg:'108m',u:'71%'},
+    {m:'Nov 2025',t:38,c:36,x:2,e:1,avg:'115m',u:'64%'},
+    {m:'Dec 2025',t:31,c:29,x:2,e:3,avg:'98m',u:'52%'},
+    {m:'Jan 2026',t:45,c:41,x:4,e:2,avg:'112m',u:'75%'},
+    {m:'Feb 2026',t:44,c:42,x:2,e:4,avg:'119m',u:'74%'},
+    {m:'Mar 2026',t:18,c:14,x:1,e:2,avg:'105m',u:'74%'},
+  ];
+  const tb=document.getElementById('monthly-table');
+  if(tb) tb.innerHTML=monthData.map(r=>`<tr>
+    <td class="cell-mono">${r.m}</td>
+    <td class="cell-mono">${r.t}</td>
+    <td class="cell-mono" style="color:var(--green)">${r.c}</td>
+    <td class="cell-mono" style="color:var(--red)">${r.x}</td>
+    <td class="cell-mono" style="color:var(--amber)">${r.e}</td>
+    <td class="cell-mono">${r.avg}</td>
+    <td class="cell-mono">${r.u}</td>
+  </tr>`).join('');
+}
+
+// ── Resources ──────────────────────────────────
+function renderResources() {
+  const rooms=[
+    {id:'OT-1',type:'General Surgery',status:'Available',next:'Today 16:30'},
+    {id:'OT-2',type:'Cardiac',status:'In Use',next:'—'},
+    {id:'OT-3',type:'Neurosurgery',status:'Scheduled',next:'Today 11:00'},
+    {id:'OT-4',type:'Orthopaedics',status:'Scheduled',next:'Today 14:00'},
+    {id:'OT-5',type:'Paediatrics',status:'Available',next:'Tomorrow 09:00'},
+    {id:'OT-6',type:'Laparoscopy',status:'Maintenance',next:'Tomorrow 08:00'},
+  ];
+  const tb=document.getElementById('ot-room-table');
+  if(tb) tb.innerHTML=rooms.map(r=>`<tr>
+    <td class="cell-mono"><strong>${r.id}</strong></td>
+    <td>${r.type}</td>
+    <td>${statusPill(r.status)}</td>
+    <td class="cell-mono">${r.next}</td>
+  </tr>`).join('');
+  const instruments=[
+    {item:'Laparoscope Set (Karl Storz)',qty:3,status:'Available'},
+    {item:'Craniotomy Set',qty:2,status:'Available'},
+    {item:'Heart-Lung Bypass Machine',qty:1,status:'In Use'},
+    {item:'Orthopaedic Hip Prosthesis (52mm)',qty:8,status:'Available'},
+    {item:'Bipolar Forceps',qty:6,status:'2 Pending Sterilisation'},
+    {item:'Endotracheal Tubes (assorted)',qty:50,status:'Available'},
+  ];
+  const it=document.getElementById('instrument-table');
+  if(it) it.innerHTML=instruments.map(i=>`<tr>
+    <td>${i.item}</td>
+    <td class="cell-mono">${i.qty}</td>
+    <td>${i.status.includes('Pending')?`<span class="pill pill-amber">${i.status}</span>`:i.status==='In Use'?`<span class="pill pill-red">${i.status}</span>`:`<span class="pill pill-green">${i.status}</span>`}</td>
+  </tr>`).join('');
+}
+
+// ── User Dashboard ─────────────────────────────
+function renderUserDashboard() {
+  const name=currentUser?.name||'User';
+  const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('user-profile-card').innerHTML=`
+    <div class="profile-avatar">${initials}</div>
+    <div class="profile-info">
+      <h3>${name}</h3>
+      <p>${currentRole==='doctor'?'Surgeon — Cardiothoracic':'Theatre Staff'}</p>
+      <p style="color:var(--text-muted);">Central Hospital</p>
+      <span class="pill pill-green">Active</span>
+    </div>`;
+  const procs=getProcedures().filter(p=>p.surgeon===name||p.anaes===name);
+  const upcoming=procs.filter(p=>p.date>=todayStr&&p.status==='Scheduled');
+  document.getElementById('u-week').textContent=upcoming.filter(p=>isThisWeek(p.date)).length;
+  document.getElementById('u-month').textContent=procs.filter(p=>isThisMonth(p.date)).length;
+  if(upcoming.length){
+    document.getElementById('u-next').textContent=upcoming[0].date;
+    document.getElementById('u-next-sub').textContent=upcoming[0].procedure.slice(0,30);
+  }
+  const tb=document.getElementById('user-proc-table');
+  if(tb) tb.innerHTML=procs.slice(0,8).map(p=>`<tr>
+    <td class="cell-mono">${p.date}</td>
+    <td>${p.patient}</td>
+    <td>${p.procedure}</td>
+    <td class="cell-mono">${p.ot.split(' — ')[0]}</td>
+    <td>${p.surgeon===name?'Lead Surgeon':'Anaes.'}</td>
+    <td>${statusPill(p.status)}</td>
+  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:1.5rem;">No procedures assigned</td></tr>';
+}
+function isThisWeek(ds){
+  const d=new Date(ds);
+  const now=new Date();
+  const start=new Date(now); start.setDate(now.getDate()-now.getDay());
+  const end=new Date(start); end.setDate(start.getDate()+6);
+  return d>=start&&d<=end;
+}
+function isThisMonth(ds){
+  const d=new Date(ds);
+  return d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear();
+}
+
+// ── Helpers ────────────────────────────────────
+function statusPill(s) {
+  const map={
+    'Scheduled':'pill-teal','In Progress':'pill-amber',
+    'Completed':'pill-green','Cancelled':'pill-muted',
+    'Emergency':'pill-red','Active':'pill-green',
+    'On Leave':'pill-amber','Inactive':'pill-muted',
+    'Available':'pill-green','In Use':'pill-red',
+    'Maintenance':'pill-amber','Pending':'pill-amber','Scheduled (room)':'pill-teal'
+  };
+  const cls=map[s]||'pill-muted';
+  return `<span class="pill ${cls}">${s}</span>`;
+}
+
+function populateModalDropdowns() {
+  const docs=getDoctors();
+  const pats=getPatients();
+  const surgeons=docs.filter(d=>d.role==='Surgeon'||d.role==='Assistant Surgeon');
+  const anaes=docs.filter(d=>d.role==='Anaesthesiologist');
+  function fillSel(id,arr,nameKey='name'){
+    const el=document.getElementById(id); if(!el) return;
+    el.innerHTML=arr.map(a=>`<option>${a[nameKey]}</option>`).join('');
+  }
+  fillSel('np-surgeon',surgeons); fillSel('np-asst',[{name:''},...surgeons]);
+  fillSel('np-anaes',anaes); fillSel('np-patient',pats,'name');
+  document.getElementById('np-date').value=todayStr;
+}
+
+// ── Modal ──────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+// ── Toast ──────────────────────────────────────
+let _toastTimer;
+function showToast(msg,type='success') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=type;
+  t.style.display='block';
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>t.style.display='none',3200);
+}
+
+// ── Init ───────────────────────────────────────
+initCal();
+</script>
+</body>
+</html>
